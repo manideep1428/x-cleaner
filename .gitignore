@@ -1,0 +1,8 @@
+# Build output (npm run build)
+dist/
+
+# Created by Chrome inside the folder when you load the extension unpacked
+extension/_metadata/
+
+node_modules/
+.DS_Store

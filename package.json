@@ -1,0 +1,11 @@
+{
+  "name": "x-cleaner",
+  "private": true,
+  "description": "Chrome extension that removes the tracking query from X / Twitter post links.",
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

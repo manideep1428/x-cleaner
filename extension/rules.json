@@ -1,0 +1,15 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "condition": {
+      "regexFilter": "^https://(www\\.|mobile\\.)?(x|twitter)\\.com/(\\w+|i/web)/status(es)?/\\d+(/[^?#]*)?\\?",
+      "requestDomains": ["x.com", "twitter.com"],
+      "resourceTypes": ["main_frame"]
+    },
+    "action": {
+      "type": "redirect",
+      "redirect": { "transform": { "query": "" } }
+    }
+  }
+]
