@@ -54,6 +54,7 @@ and should work too, but only Chrome has been tested.
 3. Turn on **Developer mode** (the switch in the top-right corner).
 4. Click **Load unpacked** and select the **`extension`** folder inside the folder from step 1.
    Pick `extension` itself: Chrome needs the folder that contains `manifest.json`.
+   If you ran [`npm run build`](#build), you can select the `dist` folder instead.
 5. **X Link Cleaner** now appears in your list of extensions.
 
 Keep the folder where it is. Chrome loads the extension from that folder every time it starts.
@@ -79,10 +80,11 @@ Chrome warns that the extension can read and change your data on x.com and twitt
    - **Git:** run `git pull` in your `x-cleaner` folder.
    - **Download:** download the ZIP again and replace your old folder with the new one, in the
      same place. If you put it somewhere else, remove the old extension in `chrome://extensions`
-     and use **Load unpacked** again on the new `extension` folder.
-2. Open `chrome://extensions` and click the **reload** button (↻) on the X Link Cleaner card.
+     and use **Load unpacked** again on the new folder.
+2. If you load the `dist` folder, run `npm run build` again so `dist` gets the new files.
+3. Open `chrome://extensions` and click the **reload** button (↻) on the X Link Cleaner card.
    Chrome doesn't pick up changes to an unpacked extension until you reload it or restart Chrome.
-3. Reload any open x.com tabs.
+4. Reload any open x.com tabs.
 
 ## How it works
 
@@ -196,9 +198,9 @@ requests of its own. It can't access any site other than x.com and twitter.com.
 
 ## Build
 
-There's nothing to compile. The extension is plain JavaScript and JSON, and Chrome loads the
-`extension` folder as it is. You only need to build if you want a zip file, for example to share
-the extension or attach it to a GitHub release.
+There's nothing to compile. The extension is plain JavaScript and JSON, so you can load the
+`extension` folder without building. `npm run build` checks the files and copies them into
+`dist/`, a folder that's ready to load in Chrome.
 
 Requirements: [Node.js](https://nodejs.org) 18 or newer. There are no dependencies, so you don't
 need `npm install`.
@@ -207,23 +209,21 @@ need `npm install`.
 npm run build
 ```
 
+```
+Built X Link Cleaner 1.0.0 into dist (content.js, manifest.json, rules.json).
+To load it: chrome://extensions > Load unpacked > select C:\Users\you\x-cleaner\dist
+Already loaded? Click the reload button on its card in chrome://extensions.
+```
+
 The build script (`scripts/build.mjs`):
 
 1. Checks that `manifest.json` and `rules.json` are valid JSON and that every file the manifest
-   points to exists. If not, it stops with an error.
-2. Writes `dist/x-cleaner-<version>.zip`, with `manifest.json` at the top level of the zip, where
-   Chrome expects it. It skips dotfiles and the `_metadata` folder that Chrome creates when you
-   load the extension unpacked.
+   points to exists. If not, it stops with an error and leaves `dist/` as it was.
+2. Deletes the old `dist/` and copies the files from `extension/` into a new one. It skips
+   dotfiles and the `_metadata` folder that Chrome creates when you load a folder unpacked.
 
-```
-$ npm run build
-Built dist/x-cleaner-1.0.0.zip (3 files: content.js, manifest.json, rules.json)
-```
-
-The version in the file name comes from `"version"` in `extension/manifest.json`. Building the same
-files always gives a byte-identical zip.
-
-To install from the zip, unzip it into a folder and use **Load unpacked** on that folder.
+To load the build, open `chrome://extensions`, click **Load unpacked**, and select the `dist`
+folder. After every later build, click the reload button (↻) on the extension's card.
 
 ## Project structure
 
@@ -234,7 +234,8 @@ x-cleaner/
 │   ├── rules.json        Redirect rule for opening links
 │   └── content.js        Copy cleaning and address-bar backup
 ├── scripts/
-│   └── build.mjs         Creates dist/x-cleaner-<version>.zip
+│   └── build.mjs         Checks extension/ and copies it to dist/
+├── dist/                 Made by `npm run build` (not in git). Load this or extension/.
 ├── package.json          Defines `npm run build`
 ├── .gitignore            Keeps dist/ and Chrome's _metadata/ out of git
 └── README.md
@@ -242,14 +243,13 @@ x-cleaner/
 
 ## Making changes and releasing a new version
 
-1. Edit the files in `extension/`.
-2. Test: click reload (↻) on the extension in `chrome://extensions`, reload your x.com tabs, and
+1. Edit the files in `extension/`. Don't edit `dist/`, because the next build replaces it.
+2. If you load the `dist` folder, run `npm run build`.
+3. Test: click reload (↻) on the extension in `chrome://extensions`, reload your x.com tabs, and
    repeat [Check that it works](#check-that-it-works).
-3. Raise `"version"` in `extension/manifest.json` (for example `1.0.0` → `1.0.1`). It's shown in
-   `chrome://extensions` and used in the zip's file name.
-4. Run `npm run build`.
-5. Commit and push. To publish the zip, create a GitHub release and attach
-   `dist/x-cleaner-<version>.zip`.
+4. Raise `"version"` in `extension/manifest.json` (for example `1.0.0` → `1.0.1`). Chrome shows
+   it on the extension's card.
+5. Commit and push.
 
 Users then follow [Update](#update).
 
@@ -266,6 +266,6 @@ Users then follow [Update](#update).
 
 | Problem | Fix |
 | --- | --- |
-| "Manifest file is missing or unreadable" when loading | You selected the wrong folder. Select the `extension` folder, the one that contains `manifest.json`. |
+| "Manifest file is missing or unreadable" when loading | The folder you selected doesn't have `manifest.json` directly inside it. Select the `extension` folder, or run `npm run build` and select `dist`. |
 | An opened link still has `?…` | Check that the extension is turned on in `chrome://extensions`, then click reload (↻). Only post links (`/status/…`) are cleaned. |
 | **Copy link** still copies the tracking | Reload the x.com tab. Tabs that were open before you installed or reloaded the extension don't run `content.js` yet. |
